@@ -1,0 +1,5 @@
+.venv
+.streamlit/*
+!.streamlit/config.toml
+__pycache__/
+*.py[cod]
