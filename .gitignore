@@ -3,3 +3,9 @@
 !.streamlit/config.toml
 __pycache__/
 *.py[cod]
+
+# Precomputed analysis artifacts are part of the deployment and must be
+# committed to GitHub. Only temporary build folders are ignored.
+!artifacts/
+!artifacts/**
+artifacts/.k*.tmp/

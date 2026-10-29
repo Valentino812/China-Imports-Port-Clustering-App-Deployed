@@ -1,0 +1,5 @@
+Metrik,Nilai
+Accuracy / fidelity,0.9852941176470589
+Balanced accuracy,0.96
+Macro F1,0.9697777777777776
+Cohen's kappa,0.9738712776176753

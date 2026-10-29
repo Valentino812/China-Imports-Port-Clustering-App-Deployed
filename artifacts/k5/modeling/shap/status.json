@@ -1,0 +1,13 @@
+{
+  "available": true,
+  "reason": null,
+  "classes": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "n_explained": 136,
+  "n_features": 14
+}

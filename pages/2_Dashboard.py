@@ -4,9 +4,10 @@ The five views (Ringkasan, Profil Klaster, Evaluasi, Peta, Data) are switched vi
 ``st.session_state`` so this file remains a single Streamlit page. The header and
 sidebar render once and stay consistent across view changes.
 
-This deployed variant always analyses the four bundled datasets with K = 5. If
-the result has not been prepared from Beranda yet, it is loaded (and cached)
-automatically before the selected view is rendered.
+This deployed variant always displays the precomputed analysis of the four
+bundled datasets with K = 5. If the result has not been loaded from Beranda yet,
+it is read from the artifact folder (and cached) automatically before the
+selected view is rendered. No preprocessing or modelling runs at runtime.
 """
 
 from __future__ import annotations
@@ -21,9 +22,8 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from src.analysis import get_fixed_analysis
+from src.analysis import get_precomputed_analysis
 from src.config import FIXED_K, OPTIMAL_K
-from src.modeling import SILHOUETTE_SAMPLE_SIZE
 from src.visualization import (
     cluster_boxplots,
     cluster_numeric_stats,
@@ -35,7 +35,6 @@ from src.visualization import (
     confusion_heatmap,
     elbow_line,
     global_shap_bar,
-    kprototypes_silhouette_samples,
     numerical_mean_bars,
     shap_beeswarm_figure,
     shap_cluster_heatmap,
@@ -278,45 +277,22 @@ def _get_mode_text(series: pd.Series, prefix: str | None = None) -> str:
     return ", ".join(modes) if modes else "Tidak tersedia"
 
 
-@st.cache_data(show_spinner=False)
-def _silhouette_samples_cached(
-    X_model: pd.DataFrame,
-    labels: np.ndarray,
-    gamma: float,
-    numerical_cols: tuple[str, ...],
-    categorical_cols: tuple[str, ...],
-    sample_size: int,
-    random_state: int,
-) -> pd.DataFrame:
-    """Cache the per-observation silhouette while the analysis result is stable."""
-    return kprototypes_silhouette_samples(
-        X_model,
-        labels,
-        gamma,
-        list(numerical_cols),
-        list(categorical_cols),
-        sample_size=sample_size,
-        random_state=random_state,
-    )
-
-
 def _goto_home() -> None:
     st.switch_page("pages/1_Beranda.py")
 
 
 def _ensure_result() -> dict | None:
-    """Return the prepared result, loading the bundled analysis if necessary."""
+    """Return the prepared result, loading the precomputed artifact if needed."""
     result = st.session_state.get("analysis_result")
     if result:
         return result
 
     try:
         with st.spinner(
-            f"Menyiapkan hasil analisis dari empat berkas data bawaan (K = {FIXED_K}). "
-            "Proses pertama dapat memerlukan beberapa menit..."
+            f"Memuat hasil analisis precomputed (K = {FIXED_K})..."
         ):
-            result = get_fixed_analysis(FIXED_K)
-    except Exception as exc:  # noqa: BLE001 - surface any pipeline failure
+            result = get_precomputed_analysis()
+    except Exception as exc:  # noqa: BLE001 - surface any artifact failure
         st.session_state["processing_error"] = str(exc)
         return None
 
@@ -1024,28 +1000,12 @@ def _render_silhouette_section(modeling: dict, silhouette: float) -> None:
         )
     )
 
-    X_model = modeling.get("X_model")
-    labels = modeling.get("labels")
-    if X_model is None or labels is None:
+    silhouette_df = modeling.get("silhouette_samples")
+    if silhouette_df is None or silhouette_df.empty:
         st.warning(
-            "Nilai silhouette per observasi tidak tersedia pada hasil modeling ini, "
-            "sehingga Silhouette Plot tidak dapat ditampilkan."
-        )
-        return
-
-    silhouette_df = _silhouette_samples_cached(
-        X_model,
-        np.asarray(labels),
-        float(modeling["gamma"]),
-        tuple(modeling["numerical_cols"]),
-        tuple(modeling["categorical_cols"]),
-        int(SILHOUETTE_SAMPLE_SIZE),
-        42,
-    )
-    if silhouette_df.empty:
-        st.warning(
-            "Silhouette Plot tidak dapat dibuat karena nilai per observasi tidak "
-            "tersedia atau jumlah klaster tidak valid."
+            "Nilai silhouette per observasi tidak tersedia pada artifact analisis, "
+            "sehingga Silhouette Plot tidak dapat ditampilkan. "
+            "Bangun ulang artifact melalui scripts/build_analysis_artifacts.py."
         )
         return
 

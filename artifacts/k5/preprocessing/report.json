@@ -1,0 +1,59 @@
+{
+  "rows_imports": 92411,
+  "conversion": {
+    "unique_hs6": 5611,
+    "ambiguous_hs6": 0,
+    "rows_invalid_hs6": 0,
+    "rows_unmapped": 130,
+    "usd_value_unmapped": 762121793.99,
+    "rows_after_conversion": 92281
+  },
+  "rows_aggregated": 676,
+  "province": {
+    "rows_unmapped_port": 0,
+    "unmapped_ports": [],
+    "provinces_available": 38,
+    "provinces_without_macro": [],
+    "rows_geolocation": 197,
+    "ports_with_coordinates": 197,
+    "provinces_covered": 36
+  },
+  "geolocation": {
+    "rows_geolocation": 197,
+    "ports_with_coordinates": 197,
+    "provinces_covered": 36,
+    "coordinate_coverage_pct": 100.0
+  },
+  "cleaning": {
+    "rows_before_cleaning": 676,
+    "rows_after_dedup": 676,
+    "duplicates_removed": 0,
+    "missing_numeric_before": {
+      "usd_value": 0,
+      "pdrb": 0,
+      "china_investment_us_ribu": 0,
+      "micro_small_industries": 0
+    },
+    "median_imputed": {}
+  },
+  "capping": {
+    "usd_value": 92,
+    "pdrb": 0,
+    "china_investment_us_ribu": 26,
+    "micro_small_industries": 123,
+    "rows_any_capped": 208,
+    "total_rows_capped_usd_value": 92
+  },
+  "rows_final": 676,
+  "columns_final": [
+    "port",
+    "Provinsi",
+    "latitude",
+    "longitude",
+    "sitc",
+    "usd_value",
+    "pdrb",
+    "china_investment_us_ribu",
+    "micro_small_industries"
+  ]
+}

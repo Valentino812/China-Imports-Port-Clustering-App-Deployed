@@ -1,9 +1,11 @@
-"""Fixed-dataset analysis pipeline for the deployed application.
+"""Data preparation and analysis loading for the deployed application.
 
-The deployed app has no upload page. Instead, the four mandatory datasets are
-bundled in ``dataset_input/`` and the cluster count is fixed at ``FIXED_K = 5``.
-The whole preprocessing + modelling pipeline is executed once and cached with
-``st.cache_resource`` so switching between Beranda and Dashboard is immediate.
+Two responsibilities live here:
+
+* :func:`run_fixed_analysis` runs the complete preprocessing + modelling
+  pipeline and is used **only** by the offline artifact builder.
+* :func:`get_precomputed_analysis` loads the precomputed artifact directory
+  with ``st.cache_data``. The Streamlit pages never train a model at runtime.
 """
 
 from __future__ import annotations
@@ -14,6 +16,10 @@ from typing import Any
 import pandas as pd
 import streamlit as st
 
+from src.artifacts import (
+    DEFAULT_ARTIFACT_DIR,
+    load_analysis_artifacts,
+)
 from src.config import FIXED_K
 from src.modeling import run_modeling
 from src.preprocessing import (
@@ -56,7 +62,11 @@ def run_fixed_analysis(
     n_clusters: int = FIXED_K,
     progress_callback=None,
 ) -> dict[str, Any]:
-    """Run preprocessing and K-Prototypes modelling on the bundled datasets."""
+    """Run preprocessing and K-Prototypes modelling on the bundled datasets.
+
+    This is an offline build step. The Streamlit runtime uses
+    :func:`get_precomputed_analysis` instead.
+    """
     frames = load_bundled_datasets()
 
     pre_result = run_preprocessing(
@@ -84,7 +94,20 @@ def run_fixed_analysis(
     }
 
 
-@st.cache_resource(show_spinner=False)
-def get_fixed_analysis(n_clusters: int = FIXED_K) -> dict[str, Any]:
-    """Return the cached analysis result for the bundled data (K = 5)."""
-    return run_fixed_analysis(n_clusters=n_clusters)
+def load_precomputed_analysis(
+    artifact_dir: str | Path = DEFAULT_ARTIFACT_DIR,
+) -> dict[str, Any]:
+    """Load the precomputed dashboard result without running any modelling."""
+    return load_analysis_artifacts(Path(artifact_dir))
+
+
+@st.cache_data(show_spinner=False)
+def get_precomputed_analysis(
+    artifact_dir: str = str(DEFAULT_ARTIFACT_DIR),
+) -> dict[str, Any]:
+    """Return the cached precomputed analysis result (K = 5).
+
+    ``st.cache_data`` only avoids re-reading the artifact files on every
+    Streamlit rerun; the analysis itself was already computed offline.
+    """
+    return load_precomputed_analysis(artifact_dir)

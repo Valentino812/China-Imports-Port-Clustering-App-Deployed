@@ -1,0 +1,40 @@
+{
+  "n_clusters": 5,
+  "n_observations": 676,
+  "n_features": 5,
+  "gamma": 0.5,
+  "silhouette": 0.8084108499435118,
+  "silhouette_n": 676,
+  "numerical_cols": [
+    "usd_value",
+    "pdrb",
+    "china_investment_us_ribu",
+    "micro_small_industries"
+  ],
+  "categorical_cols": [
+    "sitc"
+  ],
+  "feature_cols": [
+    "sitc",
+    "usd_value",
+    "pdrb",
+    "china_investment_us_ribu",
+    "micro_small_industries"
+  ],
+  "categorical_index": [
+    0
+  ],
+  "config": {
+    "init": "Huang",
+    "n_init": 5,
+    "random_state": 42,
+    "n_jobs": -1,
+    "n_clusters": 5
+  },
+  "datasets": {
+    "imports": "port_imports.csv",
+    "provinces": "provinces_data.csv",
+    "conversion": "HS2022_to_SITC_Conversion.xlsx",
+    "geolocation": "port_geolocation.csv"
+  }
+}

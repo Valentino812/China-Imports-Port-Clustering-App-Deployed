@@ -1,8 +1,9 @@
 """Beranda (homepage) page for the deployed two-page application.
 
 Displays the research title, a short description of the bundled datasets and a
-single action button that prepares the fixed analysis (K = 5) and opens the
-Dashboard directly. No upload or cluster-count configuration happens here.
+single action button that loads the precomputed analysis (K = 5) and opens the
+Dashboard directly. No upload, training, or cluster-count configuration happens
+here.
 """
 
 from __future__ import annotations
@@ -14,19 +15,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import streamlit as st
 
-from src.analysis import get_fixed_analysis
+from src.analysis import get_precomputed_analysis
 from src.config import FIXED_K
 
 
 def _open_dashboard() -> None:
-    """Prepare the cached analysis result and switch to the Dashboard."""
+    """Load the precomputed analysis and switch to the Dashboard."""
     try:
         with st.spinner(
-            f"Menyiapkan hasil analisis dari empat berkas data bawaan (K = {FIXED_K}). "
-            "Proses pertama dapat memerlukan beberapa menit..."
+            f"Memuat hasil analisis precomputed (K = {FIXED_K})..."
         ):
-            result = get_fixed_analysis(FIXED_K)
-    except Exception as exc:  # noqa: BLE001 - surface any pipeline failure
+            result = get_precomputed_analysis()
+    except Exception as exc:  # noqa: BLE001 - surface any artifact failure
         st.session_state["processing_error"] = str(exc)
         return
 
@@ -60,10 +60,10 @@ def render() -> None:
         st.markdown(
             """
             <div class="section-card">
-              <h4>01 · Data Bawaan</h4>
+              <h4>01 · Data &amp; Hasil Bawaan</h4>
               <p>Empat berkas data wajib — data transaksi impor, data makro provinsi, tabel konversi HS–SITC,
-              dan data geolokasi pelabuhan — telah tersedia di dalam aplikasi. Jumlah klaster ditetapkan
-              sebesar K = 5.</p>
+              dan data geolokasi pelabuhan — telah tersedia. Hasil prapemrosesan dan pemodelan juga telah
+              dibangun sebagai artifact precomputed dengan K = 5.</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -73,8 +73,8 @@ def render() -> None:
             """
             <div class="section-card">
               <h4>02 · Proses Klasterisasi</h4>
-              <p>Prapemrosesan otomatis, pemodelan K-Prototypes, evaluasi Elbow &amp; Silhouette campuran, hingga
-              pelatihan model surrogate Random Forest dan analisis SHAP.</p>
+              <p>Prapemrosesan, pemodelan K-Prototypes, evaluasi Elbow &amp; Silhouette campuran, pelatihan
+              surrogate Random Forest, dan analisis SHAP telah dijalankan sekali saat pembangunan artifact.</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -105,10 +105,10 @@ def render() -> None:
 
     st.caption(
         "🔒 Seluruh data yang ada pada aplikasi diproses secara lokal sehingga tidak ada informasi yang "
-        "dikirim ke server eksternal. Aplikasi menggunakan empat berkas data bawaan pada folder "
-        "dataset_input dengan konfigurasi jumlah klaster K = 5. Tekan tombol Lihat Hasil Analisis untuk "
-        "menjalankan prapemrosesan, pemodelan K-Prototypes, evaluasi Silhouette, model surrogate Random "
-        "Forest, dan analisis SHAP, lalu langsung membuka dashboard."
+        "dikirim ke server eksternal. Aplikasi memuat hasil analisis yang telah dibangun dari empat "
+        "berkas data bawaan pada folder dataset_input dengan konfigurasi jumlah klaster K = 5. Tekan "
+        "tombol Lihat Hasil Analisis untuk memuat artifact precomputed dan langsung membuka dashboard "
+        "tanpa menjalankan ulang prapemrosesan atau pemodelan."
     )
 
 
